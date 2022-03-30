@@ -4,6 +4,7 @@ use petgraph::Undirected;
 
 pub const NETWORK_SIZE: usize = 20;
 pub const NUM_EDGES: usize = 28;
+pub const PACKET_SIZE: u32 = 12_000;
 
 pub fn create_network() -> StableGraph<(), (), Undirected> {
     StableGraph::<(), (), Undirected>::from_edges(&[
