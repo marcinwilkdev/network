@@ -1,4 +1,5 @@
 use petgraph::graph::UnGraph;
+use petgraph::algo;
 
 fn create_network() -> UnGraph<(), ()> {
     UnGraph::<(), ()>::from_edges(&[
@@ -38,4 +39,11 @@ pub fn show_network() {
 
     println!("Num nodes: {}", network.node_count());
     println!("Num edges: {}", network.edge_count());
+}
+
+pub fn graph_connected(graph: &UnGraph<(), ()>) -> bool {
+    let graph_size = graph.node_count();
+    let node_map = algo::dijkstra(&graph, 0.into(), None, |_| 1);
+
+    graph_size == node_map.len()
 }
