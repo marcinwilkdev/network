@@ -36,6 +36,39 @@ fn create_network() -> UnGraph<(), ()> {
     ])
 }
 
+pub fn get_capacity(edge_index: usize) -> u32 {
+    [
+        100_000_000,
+        1_000_000,
+        10_000_000,
+        10_000_000,
+        100_000_000,
+        1_000_000,
+        100_000_000,
+        10_000_000,
+        1_000_000,
+        100_000_000,
+        10_000_000,
+        100_000_000,
+        100_000_000,
+        1_000_000,
+        10_000_000,
+        100_000_000,
+        1_000_000,
+        100_000_000,
+        10_000_000,
+        1_000_000,
+        100_000_000,
+        10_000_000,
+        100_000_000,
+        100_000_000,
+        10_000_000,
+        1_000_000,
+        10_000_000,
+        100_000_000,
+    ][edge_index]
+}
+
 fn create_intensity_matrix() -> [[u32; NETWORK_SIZE]; NETWORK_SIZE] {
     [
         [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 8, 1, 2, 5, 9, 2, 1, 5],
@@ -63,6 +96,9 @@ fn create_intensity_matrix() -> [[u32; NETWORK_SIZE]; NETWORK_SIZE] {
 
 pub fn show_network() {
     let network = create_network();
+
+    let a = network.find_edge(0.into(), 1.into()).unwrap();
+    println!("{:?}", a);
 
     println!("Num nodes: {}", network.node_count());
     println!("Num edges: {}", network.edge_count());
