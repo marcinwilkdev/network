@@ -2,6 +2,7 @@ use petgraph::algo;
 use petgraph::graph::UnGraph;
 
 pub const NETWORK_SIZE: usize = 20;
+pub const NUM_EDGES: usize = 28;
 
 fn create_network() -> UnGraph<(), ()> {
     UnGraph::<(), ()>::from_edges(&[
@@ -36,7 +37,7 @@ fn create_network() -> UnGraph<(), ()> {
     ])
 }
 
-pub fn get_capacity(edge_index: usize) -> u32 {
+pub fn get_capacities() -> [u32; NUM_EDGES] {
     [
         100_000_000,
         1_000_000,
@@ -66,7 +67,7 @@ pub fn get_capacity(edge_index: usize) -> u32 {
         1_000_000,
         10_000_000,
         100_000_000,
-    ][edge_index]
+    ]
 }
 
 fn create_intensity_matrix() -> [[u32; NETWORK_SIZE]; NETWORK_SIZE] {
