@@ -1,11 +1,12 @@
 use petgraph::algo;
-use petgraph::graph::UnGraph;
+use petgraph::stable_graph::StableGraph;
+use petgraph::Undirected;
 
 pub const NETWORK_SIZE: usize = 20;
 pub const NUM_EDGES: usize = 28;
 
-fn create_network() -> UnGraph<(), ()> {
-    UnGraph::<(), ()>::from_edges(&[
+pub fn create_network() -> StableGraph<(), (), Undirected> {
+    StableGraph::<(), (), Undirected>::from_edges(&[
         (0, 1),
         (0, 3),
         (0, 6),
@@ -72,7 +73,7 @@ fn get_capacities() -> [u32; NUM_EDGES] {
 
 fn get_flows(
     intensity_matrix: [[u32; NETWORK_SIZE]; NETWORK_SIZE],
-    network: &UnGraph<(), ()>,
+    network: &StableGraph<(), (), Undirected>,
 ) -> [u32; NUM_EDGES] {
     let mut flows = [0; 28];
 
@@ -134,7 +135,7 @@ fn show_network() {
     println!("Num edges: {}", network.edge_count());
 }
 
-fn graph_connected(graph: &UnGraph<(), ()>) -> bool {
+fn graph_connected(graph: &StableGraph<(), (), Undirected>) -> bool {
     let graph_size = graph.node_count();
     let node_map = algo::dijkstra(&graph, 0.into(), None, |_| 1);
 
