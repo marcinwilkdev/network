@@ -37,7 +37,7 @@ fn create_network() -> UnGraph<(), ()> {
     ])
 }
 
-pub fn get_capacities() -> [u32; NUM_EDGES] {
+fn get_capacities() -> [u32; NUM_EDGES] {
     [
         100_000_000,
         1_000_000,
@@ -68,6 +68,35 @@ pub fn get_capacities() -> [u32; NUM_EDGES] {
         10_000_000,
         100_000_000,
     ]
+}
+
+fn get_flows(
+    intensity_matrix: [[u32; NETWORK_SIZE]; NETWORK_SIZE],
+    network: &UnGraph<(), ()>,
+) -> [u32; NUM_EDGES] {
+    let mut flows = [0; 28];
+
+    for i in 0..NETWORK_SIZE as u32 {
+        for j in 0..NETWORK_SIZE as u32 {
+            if i != j {
+                let intensity = intensity_matrix[i as usize][j as usize];
+
+                let (_, route) = algo::astar(network, i.into(), |goal| goal == j.into(), |_| 1, |_| 0).expect("has to be road");
+
+                let mut before_node_index = route[0];
+
+                for node in &route[1..] {
+                    let edge = network.find_edge(before_node_index, *node).expect("has to be edge");
+
+                    flows[edge.index()] += intensity;
+
+                    before_node_index = *node;
+                }
+            }
+        }
+    }
+
+    flows
 }
 
 fn create_intensity_matrix() -> [[u32; NETWORK_SIZE]; NETWORK_SIZE] {
@@ -95,7 +124,7 @@ fn create_intensity_matrix() -> [[u32; NETWORK_SIZE]; NETWORK_SIZE] {
     ]
 }
 
-pub fn show_network() {
+fn show_network() {
     let network = create_network();
 
     let a = network.find_edge(0.into(), 1.into()).unwrap();
@@ -105,7 +134,7 @@ pub fn show_network() {
     println!("Num edges: {}", network.edge_count());
 }
 
-pub fn graph_connected(graph: &UnGraph<(), ()>) -> bool {
+fn graph_connected(graph: &UnGraph<(), ()>) -> bool {
     let graph_size = graph.node_count();
     let node_map = algo::dijkstra(&graph, 0.into(), None, |_| 1);
 
