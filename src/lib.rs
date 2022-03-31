@@ -11,5 +11,4 @@ pub const TEST_COUNT: usize = 1_000_000;
 
 pub type Network = petgraph::stable_graph::StableGraph<(), (), petgraph::Undirected>;
 pub type NodesMatrix = [[u32; NETWORK_SIZE]; NETWORK_SIZE];
-pub type EdgesArray = [u32; NUM_EDGES];
 pub type RoutesCache = std::collections::HashMap<(u32, u32), Vec<petgraph::graph::EdgeIndex>>;

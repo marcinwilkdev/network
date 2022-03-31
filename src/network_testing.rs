@@ -7,7 +7,7 @@ use crate::*;
 pub fn test_network(
     network: &Network,
     intensity_matrix: NodesMatrix,
-    capacities: EdgesArray,
+    capacities: &[u32],
     p: f64,
     t_max: f64,
     routes_cache: &RoutesCache,
@@ -29,13 +29,13 @@ pub fn test_network(
             continue;
         }
 
-        let flows = get_flows(intensity_matrix, &network_copy, routes_cache);
+        let flows = get_flows(intensity_matrix, &network_copy, routes_cache, capacities.len());
 
-        if !check_edges_capacity(capacities, &network_copy, flows) {
+        if !check_edges_capacity(capacities, &network_copy, &flows) {
             continue;
         }
 
-        let t = calculate_delay(intensity_matrix, &network_copy, capacities, flows);
+        let t = calculate_delay(intensity_matrix, &network_copy, capacities, &flows);
 
         if t < t_max {
             s += 1.0;
@@ -117,8 +117,9 @@ fn get_flows(
     intensity_matrix: NodesMatrix,
     network: &Network,
     routes_cache: &RoutesCache,
-) -> EdgesArray {
-    let mut flows = [0; 28];
+    num_edges: usize,
+) -> Vec<u32> {
+    let mut flows = vec![0; num_edges];
 
     for i in 0..NETWORK_SIZE as u32 {
         for j in 0..NETWORK_SIZE as u32 {
@@ -154,7 +155,7 @@ fn get_flows(
     flows
 }
 
-fn check_edges_capacity(capacities: EdgesArray, network: &Network, flows: EdgesArray) -> bool {
+fn check_edges_capacity(capacities: &[u32], network: &Network, flows: &[u32]) -> bool {
     for edge in network.edge_indices() {
         let capacity = capacities[edge.index()];
         let flow = flows[edge.index()];
@@ -170,8 +171,8 @@ fn check_edges_capacity(capacities: EdgesArray, network: &Network, flows: EdgesA
 fn calculate_delay(
     intensity_matrix: NodesMatrix,
     network: &Network,
-    capacities: EdgesArray,
-    flows: EdgesArray,
+    capacities: &[u32],
+    flows: &[u32],
 ) -> f64 {
     let sum_intensities = intensity_matrix
         .iter()
