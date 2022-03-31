@@ -2,9 +2,62 @@ use petgraph::algo;
 use petgraph::stable_graph::StableGraph;
 use petgraph::Undirected;
 
+use rand::prelude::*;
+
 pub const NETWORK_SIZE: usize = 20;
 pub const NUM_EDGES: usize = 28;
 pub const PACKET_SIZE: u32 = 12_000;
+pub const TEST_COUNT: usize = 1_000_000;
+
+pub fn test_network(
+    network: &StableGraph<(), (), Undirected>,
+    intensity_matrix: [[u32; NETWORK_SIZE]; NETWORK_SIZE],
+    capacities: [u32; NUM_EDGES],
+    p: f64,
+    t_max: f64,
+) -> f64 {
+    let mut s = 0.0;
+
+    for _ in 0..TEST_COUNT {
+        let mut network_copy = network.clone();
+
+        disconnect_faulty_connections(&mut network_copy, p);
+
+        if !graph_connected(network) {
+            continue;
+        }
+
+        let flows = get_flows(intensity_matrix, &network_copy);
+
+        if !check_edges_capacity(capacities, &network_copy, flows) {
+            continue;
+        }
+
+        let t = calculate_delay(intensity_matrix, &network_copy, capacities, flows);
+
+        if t < t_max {
+            s += 1.0;
+        }
+    }
+
+    s / TEST_COUNT as f64
+}
+
+fn disconnect_faulty_connections(network: &mut StableGraph<(), (), Undirected>, p: f64) {
+    let mut edge_indices = Vec::new();
+
+    for edge_indice in network.edge_indices() {
+        let r = thread_rng().gen::<f64>();
+
+        if r > p {
+            edge_indices.push(edge_indice);
+        }
+    }
+
+    for edge_indice in edge_indices {
+        network.remove_edge(edge_indice);
+    }
+}
 
 pub fn create_network() -> StableGraph<(), (), Undirected> {
     StableGraph::<(), (), Undirected>::from_edges(&[
@@ -62,17 +115,24 @@ fn calculate_delay(
     capacities: [u32; NUM_EDGES],
     flows: [u32; NUM_EDGES],
 ) -> f64 {
-    let sum_intensities = intensity_matrix.iter().map(|row| row.iter().sum::<u32>()).sum::<u32>();
+    let sum_intensities = intensity_matrix
+        .iter()
+        .map(|row| row.iter().sum::<u32>())
+        .sum::<u32>();
 
     let inverse_sum_intensities = 1.0 / sum_intensities as f64;
 
-    inverse_sum_intensities * network.edge_indices().map(|indice| {
-        let indice = indice.index();
-        let flow = flows[indice] as f64;
-        let capacity = capacities[indice] as f64;
+    inverse_sum_intensities
+        * network
+            .edge_indices()
+            .map(|indice| {
+                let indice = indice.index();
+                let flow = flows[indice] as f64;
+                let capacity = capacities[indice] as f64;
 
-        flow / (( capacity / PACKET_SIZE as f64 ) - flow)
-    }).sum::<f64>()
+                flow / ((capacity / PACKET_SIZE as f64) - flow)
+            })
+            .sum::<f64>()
 }
 
 fn get_capacities() -> [u32; NUM_EDGES] {
