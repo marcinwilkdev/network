@@ -39,6 +39,23 @@ pub fn create_network() -> StableGraph<(), (), Undirected> {
     ])
 }
 
+fn check_edges_capacity(
+    capacities: [u32; NUM_EDGES],
+    network: &StableGraph<(), (), Undirected>,
+    flows: [u32; NUM_EDGES],
+) -> bool {
+    for edge in network.edge_indices() {
+        let capacity = capacities[edge.index()];
+        let flow = flows[edge.index()];
+
+        if capacity / PACKET_SIZE < flow {
+            return false;
+        }
+    }
+
+    true
+}
+
 fn get_capacities() -> [u32; NUM_EDGES] {
     [
         100_000_000,
@@ -83,12 +100,16 @@ fn get_flows(
             if i != j {
                 let intensity = intensity_matrix[i as usize][j as usize];
 
-                let (_, route) = algo::astar(network, i.into(), |goal| goal == j.into(), |_| 1, |_| 0).expect("has to be road");
+                let (_, route) =
+                    algo::astar(network, i.into(), |goal| goal == j.into(), |_| 1, |_| 0)
+                        .expect("has to be road");
 
                 let mut before_node_index = route[0];
 
                 for node in &route[1..] {
-                    let edge = network.find_edge(before_node_index, *node).expect("has to be edge");
+                    let edge = network
+                        .find_edge(before_node_index, *node)
+                        .expect("has to be edge");
 
                     flows[edge.index()] += intensity;
 
